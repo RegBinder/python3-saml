@@ -756,15 +756,13 @@ class OneLogin_Saml2_Utils(object):
          }
         sign_algorithm_transform = sign_algorithm_transform_map.get(sign_algorithm, xmlsec.Transform.RSA_SHA1)
 
-        signature = Signature(xmlsec.Transform.EXCL_C14N, sign_algorithm_transform)
-
         if xml is None or xml == '':
             raise Exception('Empty string supplied as input')
         elif isinstance(xml, etree._Element):
-            doc = xml
+            elem = xml
         elif isinstance(xml, Document):
             xml = xml.toxml()
-            doc= fromstring(str(xml))
+            elem = OneLogin_Saml2_XML.to_etree(xml)
         elif isinstance(xml, Element):
             xml.setAttributeNS(
                 unicode(OneLogin_Saml2_Constants.NS_SAMLP),
@@ -777,17 +775,30 @@ class OneLogin_Saml2_Utils(object):
                 unicode(OneLogin_Saml2_Constants.NS_SAML)
             )
             xml = xml.toxml()
-            doc = fromstring(str(xml))
+            elem = OneLogin_Saml2_XML.to_etree(xml)
         elif isinstance(xml, basestring):
-            doc = fromstring(str(xml))
+            elem = OneLogin_Saml2_XML.to_etree(xml)
         else:
             raise Exception('Error parsing xml string')
 
+        xmlsec.tree.add_ids(elem, ['ID'])
+        signature = xmlsec.template.create(elem, xmlsec.Transform.EXCL_C14N, sign_algorithm_transform, ns='ds')
+
+        issuer = OneLogin_Saml2_XML.query(elem, '//saml:Issuer')
+        if len(issuer) > 0:
+            issuer = issuer[0]
+            issuer.addnext(signature)
+        else:
+            elem[0].insert(0, signature)
+
+        elem_id = elem.get('ID', None)
+        if elem_id:
+            elem_id = '#' + elem_id
+
         # # ID attributes different from xml:id must be made known by the application through a call
         # # to the addIds(node, ids) function defined by xmlsec.
-        xmlsec.tree.add_ids(doc, ['ID'])
 
-        doc.insert(0, signature)
+        # doc.insert(0, signature)
 
         digest_algorithm_transform_map = {
             OneLogin_Saml2_Constants.SHA1: xmlsec.Transform.SHA1,
@@ -796,13 +807,11 @@ class OneLogin_Saml2_Utils(object):
 
         digest_algorithm_transform = digest_algorithm_transform_map.get(digest_algorithm, xmlsec.Transform.RSA_SHA1)
 
-        ref = signature.addReference(digest_algorithm_transform, uri="#%s" % uid)
-        ref.addTransform(xmlsec.Transform.ENVELOPED)
-        ref.addTransform(xmlsec.Transform.EXCL_C14N)
-
-        key_info = signature.ensureKeyInfo()
-        key_info.addKeyName()
-        key_info.addX509Data()
+        ref = xmlsec.template.add_reference(signature, digest_algorithm_transform, uri=elem_id)
+        xmlsec.template.add_transform(ref, xmlsec.Transform.ENVELOPED)
+        xmlsec.template.add_transform(ref, xmlsec.Transform.EXCL_C14N)
+        key_info = xmlsec.template.ensure_key_info(signature)
+        xmlsec.template.add_x509_data(key_info)
 
         dsig_ctx = xmlsec.SignatureContext()
         sign_key = xmlsec.Key.from_memory(cert, xmlsec.KeyFormat.CERT_PEM, None)
@@ -811,9 +820,7 @@ class OneLogin_Saml2_Utils(object):
         dsig_ctx.key = sign_key
         dsig_ctx.sign(signature)
 
-        newdoc = parseString(etree.tostring(doc))
-
-        return newdoc.saveXML(newdoc.firstChild)
+        return OneLogin_Saml2_XML.to_string(elem)
 
 
     @staticmethod
