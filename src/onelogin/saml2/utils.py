@@ -594,9 +594,6 @@ class OneLogin_Saml2_Utils(object):
 
             xmlsec.enable_debug_trace(debug)
 
-            if debug:
-                xmlsec.set_error_calback(print_xmlsec_errors)
-
             # Load the public cert
             manager = xmlsec.KeysManager()
             manager.add_key(xmlsec.Key.from_memory(cert, xmlsec.KeyFormat.CERT_PEM, None))
@@ -673,8 +670,6 @@ class OneLogin_Saml2_Utils(object):
         encrypted_data = OneLogin_Saml2_XML.to_etree(encrypted_data)
         xmlsec.enable_debug_trace(debug)
 
-        if debug:
-            xmlsec.set_error_callback(print_xmlsec_errors)
         manager = xmlsec.KeysManager()
 
         manager.add_key(xmlsec.Key.from_memory(key, xmlsec.KeyFormat.PEM, None))
@@ -707,9 +702,6 @@ class OneLogin_Saml2_Utils(object):
 
         elem = OneLogin_Saml2_XML.to_etree(xml)
         xmlsec.enable_debug_trace(debug)
-
-        if debug:
-            xmlsec.set_error_callback(print_xmlsec_errors)
 
         xmlsec.tree.add_ids(elem, ["ID"])
         # Sign the metadata with our private key.
@@ -754,8 +746,6 @@ class OneLogin_Saml2_Utils(object):
                          digest_algorithm=OneLogin_Saml2_Constants.SHA1):
 
         # thanks to https://github.com/onelogin/python-saml/pull/78/files for the help. credit to @tachang
-
-        xmlsec.set_error_callback(print_xmlsec_errors)
         #
         sign_algorithm_transform_map = {
              OneLogin_Saml2_Constants.DSA_SHA1: xmlsec.TransformDsaSha1,
@@ -865,9 +855,6 @@ class OneLogin_Saml2_Utils(object):
             elem = OneLogin_Saml2_XML.to_etree(xml)
             xmlsec.enable_debug_trace(debug)
 
-            if debug:
-                xmlsec.set_error_callback(print_xmlsec_errors)
-
             xmlsec.tree.add_ids(elem, ["ID"])
 
             signature_nodes = OneLogin_Saml2_XML.query(elem, '/samlp:Response/ds:Signature')
@@ -917,9 +904,6 @@ class OneLogin_Saml2_Utils(object):
 
             elem = OneLogin_Saml2_XML.to_etree(xml)
             xmlsec.enable_debug_trace(debug)
-
-            if debug:
-                xmlsec.set_error_callback(print_xmlsec_errors)
 
             xmlsec.tree.add_ids(elem, ["ID"])
 
@@ -971,9 +955,6 @@ class OneLogin_Saml2_Utils(object):
         try:
 
             xmlsec.enable_debug_trace(debug)
-
-            if debug:
-                    xmlsec.set_error_callback(print_xmlsec_errors)
 
             if (cert is None or cert == '') and fingerprint:
                 x509_certificate_nodes = OneLogin_Saml2_XML.query(signature_node, '//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate')
@@ -1057,8 +1038,6 @@ class OneLogin_Saml2_Utils(object):
         """
         try:
             xmlsec.enable_debug_trace(debug)
-            if debug:
-                xmlsec.set_error_callback(print_xmlsec_errors)
 
             dsig_ctx = xmlsec.SignatureContext()
             dsig_ctx.key = xmlsec.Key.from_memory(cert, xmlsec.KeyFormat.CERT_PEM, None)
