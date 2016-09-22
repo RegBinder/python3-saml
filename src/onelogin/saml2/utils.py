@@ -815,8 +815,8 @@ class OneLogin_Saml2_Utils(object):
         xmlsec.template.add_x509_data(key_info)
 
         dsig_ctx = xmlsec.SignatureContext()
-        sign_key = xmlsec.Key.from_memory(cert, xmlsec.KeyFormat.CERT_PEM, None)
-        sign_key.load_cert_from_memory(cert, xmlsec.KeyFormat.CERT_PEM)
+        sign_key = xmlsec.Key.from_memory(key, xmlsec.KeyFormat.PEM, None)
+        sign_key.load_cert_from_memory(cert, xmlsec.KeyFormat.PEM)
 
         dsig_ctx.key = sign_key
         dsig_ctx.sign(signature)
