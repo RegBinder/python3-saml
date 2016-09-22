@@ -12,6 +12,12 @@ AuthNRequest class of OneLogin's Python Toolkit.
 from onelogin.saml2.constants import OneLogin_Saml2_Constants
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
 from onelogin.saml2.xml_templates import OneLogin_Saml2_Templates
+from onelogin.saml2.errors import OneLogin_Saml2_Error
+import logging
+
+from xml.dom.minidom import parseString
+
+log = logging.getLogger(__name__)
 
 
 class OneLogin_Saml2_Authn_Request(object):
@@ -117,7 +123,36 @@ class OneLogin_Saml2_Authn_Request(object):
                 'attr_consuming_service_str': attr_consuming_service_str,
             }
 
-        self.__authn_request = request
+        # from https://github.com/onelogin/python-saml/pull/78. credit to @tachang
+        # Only the urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST binding gets the enveloped signature
+        if settings.get_idp_data()['singleSignOnService'].get('binding',
+                                                              None) == 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST' and \
+                        security['authnRequestsSigned'] is True:
+
+            log.debug("Generating AuthnRequest using urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST binding")
+
+            if 'signatureAlgorithm' in security:
+                key = settings.get_sp_key()
+                if not key:
+                    raise OneLogin_Saml2_Error("Attempt to sign the AuthnRequest but unable to load the SP private key")
+                cert = settings.get_sp_cert()
+                if not key:
+                    raise OneLogin_Saml2_Error("Attempt to sign the AuthnRequest but unable to load the SP cert")
+                doc = parseString(request)
+                security_algo = security['signatureAlgorithm']
+                digest_method_algo = security['digestMethodAlgorithm']
+                self.__authn_request = OneLogin_Saml2_Utils.add_sign_with_id(doc, uid, key, cert,
+                                                                             sign_algorithm=security_algo,
+                                                                             digest_algorithm=digest_method_algo,
+                                                                             debug=False)
+                log.debug("Generated AuthnRequest: {}".format(self.__authn_request))
+            else:
+                self.__authn_request = request
+
+            log.debug("Generated AuthnRequest: {}".format(self.__authn_request))
+        else:
+
+            self.__authn_request = request
 
     def get_request(self, deflate=True):
         """
