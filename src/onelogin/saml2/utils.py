@@ -804,20 +804,11 @@ class OneLogin_Saml2_Utils(object):
         key_info.addKeyName()
         key_info.addX509Data()
 
-        dsig_ctx = xmlsec.DSigCtx()
+        dsig_ctx = xmlsec.SignatureContext()
+        sign_key = xmlsec.Key.from_memory(cert, xmlsec.KeyFormat.CERT_PEM, None)
+        sign_key.load_cert_from_memory(cert, xmlsec.KeyFormat.CERT_PEM)
 
-        sign_key = xmlsec.Key.loadMemory(key, xmlsec.KeyDataFormatPem, None)
-
-        from tempfile import NamedTemporaryFile
-        cert_file = NamedTemporaryFile(delete=True)
-        cert_file.write(cert)
-        cert_file.seek(0)
-
-        sign_key.loadCert(cert_file.name, xmlsec.KeyDataFormatPem)
-
-        dsig_ctx.signKey = sign_key
-
-        # # Note: the assignment below effectively copies the key
+        dsig_ctx.key = sign_key
         dsig_ctx.sign(signature)
 
         newdoc = parseString(etree.tostring(doc))
