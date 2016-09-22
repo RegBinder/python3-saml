@@ -755,7 +755,6 @@ class OneLogin_Saml2_Utils(object):
 
         # thanks to https://github.com/onelogin/python-saml/pull/78/files for the help. credit to @tachang
 
-        xmlsec.initialize()
         xmlsec.set_error_callback(print_xmlsec_errors)
         #
         sign_algorithm_transform_map = {
