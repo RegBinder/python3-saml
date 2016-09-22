@@ -747,14 +747,6 @@ class OneLogin_Saml2_Utils(object):
 
         # thanks to https://github.com/onelogin/python-saml/pull/78/files for the help. credit to @tachang
         #
-        sign_algorithm_transform_map = {
-            OneLogin_Saml2_Constants.DSA_SHA1: xmlsec.Transform.DSA_SHA1,
-            OneLogin_Saml2_Constants.RSA_SHA1: xmlsec.Transform.RSA_SHA1,
-            OneLogin_Saml2_Constants.RSA_SHA256: xmlsec.Transform.RSA_SHA256,
-            OneLogin_Saml2_Constants.RSA_SHA384: xmlsec.Transform.RSA_SHA384,
-            OneLogin_Saml2_Constants.RSA_SHA512: xmlsec.Transform.RSA_SHA512
-         }
-        sign_algorithm_transform = sign_algorithm_transform_map.get(sign_algorithm, xmlsec.Transform.RSA_SHA1)
 
         if xml is None or xml == '':
             raise Exception('Empty string supplied as input')
@@ -782,6 +774,15 @@ class OneLogin_Saml2_Utils(object):
             raise Exception('Error parsing xml string')
 
         xmlsec.tree.add_ids(elem, ['ID'])
+        sign_algorithm_transform_map = {
+            OneLogin_Saml2_Constants.DSA_SHA1: xmlsec.Transform.DSA_SHA1,
+            OneLogin_Saml2_Constants.RSA_SHA1: xmlsec.Transform.RSA_SHA1,
+            OneLogin_Saml2_Constants.RSA_SHA256: xmlsec.Transform.RSA_SHA256,
+            OneLogin_Saml2_Constants.RSA_SHA384: xmlsec.Transform.RSA_SHA384,
+            OneLogin_Saml2_Constants.RSA_SHA512: xmlsec.Transform.RSA_SHA512
+         }
+        sign_algorithm_transform = sign_algorithm_transform_map.get(sign_algorithm, xmlsec.Transform.RSA_SHA1)
+
         signature = xmlsec.template.create(elem, xmlsec.Transform.EXCL_C14N, sign_algorithm_transform, ns='ds')
 
         issuer = OneLogin_Saml2_XML.query(elem, '//saml:Issuer')
