@@ -785,7 +785,7 @@ class OneLogin_Saml2_Utils(object):
 
         # # ID attributes different from xml:id must be made known by the application through a call
         # # to the addIds(node, ids) function defined by xmlsec.
-        xmlsec.addIDs(doc, ['ID'])
+        xmlsec.tree.add_ids(doc, ['ID'])
 
         doc.insert(0, signature)
 
