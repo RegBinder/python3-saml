@@ -319,7 +319,7 @@ class OneLogin_Saml2_Auth(object):
         security = self.__settings.get_security_data()
         if security.get('authnRequestsSigned', False):
             parameters['SigAlg'] = security['signatureAlgorithm']
-            parameters['Signature'] = self.build_request_signature(saml_request, parameters['RelayState'],
+            parameters['Signature'] = self.build_request_signature(parameters,
                                                                    security['signatureAlgorithm'])
             # HTTP-POST binding requires generation of a form
             if self.get_settings().get_idp_data()['singleSignOnService'].get('binding',
@@ -346,21 +346,6 @@ class OneLogin_Saml2_Auth(object):
                     return parameters
 
         return self.redirect_to(self.get_sso_url(), parameters)
-
-    def build_request_signature(self, saml_request, relay_state, sign_algorithm=OneLogin_Saml2_Constants.RSA_SHA1):
-        """
-        Builds the Signature of the SAML Request.
-
-        :param saml_request: The SAML Request
-        :type saml_request: string
-
-        :param relay_state: The target URL the user should be redirected to
-        :type relay_state: string
-
-        :param sign_algorithm: Signature algorithm method
-        :type sign_algorithm: string
-        """
-        return self.__build_signature(saml_request, relay_state, 'SAMLRequest', sign_algorithm)
 
     def login(self, return_to=None, force_authn=False, is_passive=False, set_nameid_policy=True):
         """
@@ -462,6 +447,21 @@ class OneLogin_Saml2_Auth(object):
         idp_data = self.__settings.get_idp_data()
         if 'url' in idp_data['singleLogoutService']:
             return idp_data['singleLogoutService']['url']
+
+    def build_request_signature(self, request_data, sign_algorithm=OneLogin_Saml2_Constants.RSA_SHA1):
+        """
+        Builds the Signature of the SAML Request.
+
+        :param saml_request: The SAML Request
+        :type saml_request: string
+
+        :param relay_state: The target URL the user should be redirected to
+        :type relay_state: string
+
+        :param sign_algorithm: Signature algorithm method
+        :type sign_algorithm: string
+        """
+        return self.__build_signature(request_data, 'SAMLRequest', sign_algorithm)
 
     def add_request_signature(self, request_data, sign_algorithm=OneLogin_Saml2_Constants.RSA_SHA1):
         """
