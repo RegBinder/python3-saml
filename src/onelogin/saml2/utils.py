@@ -748,15 +748,15 @@ class OneLogin_Saml2_Utils(object):
         # thanks to https://github.com/onelogin/python-saml/pull/78/files for the help. credit to @tachang
         #
         sign_algorithm_transform_map = {
-             OneLogin_Saml2_Constants.DSA_SHA1: xmlsec.TransformDsaSha1,
-             OneLogin_Saml2_Constants.RSA_SHA1: xmlsec.TransformRsaSha1,
-             OneLogin_Saml2_Constants.RSA_SHA256: xmlsec.TransformRsaSha256,
-             OneLogin_Saml2_Constants.RSA_SHA384: xmlsec.TransformRsaSha384,
-             OneLogin_Saml2_Constants.RSA_SHA512: xmlsec.TransformRsaSha512
+            OneLogin_Saml2_Constants.DSA_SHA1: xmlsec.Transform.DSA_SHA1,
+            OneLogin_Saml2_Constants.RSA_SHA1: xmlsec.Transform.RSA_SHA1,
+            OneLogin_Saml2_Constants.RSA_SHA256: xmlsec.Transform.RSA_SHA256,
+            OneLogin_Saml2_Constants.RSA_SHA384: xmlsec.Transform.RSA_SHA384,
+            OneLogin_Saml2_Constants.RSA_SHA512: xmlsec.Transform.RSA_SHA512
          }
-        sign_algorithm_transform = sign_algorithm_transform_map.get(sign_algorithm, xmlsec.TransformRsaSha1)
+        sign_algorithm_transform = sign_algorithm_transform_map.get(sign_algorithm, xmlsec.Transform.RSA_SHA1)
 
-        signature = Signature(xmlsec.TransformExclC14N, sign_algorithm_transform)
+        signature = Signature(xmlsec.Transform.EXCL_C14N, sign_algorithm_transform)
 
         if xml is None or xml == '':
             raise Exception('Empty string supplied as input')
@@ -790,15 +790,15 @@ class OneLogin_Saml2_Utils(object):
         doc.insert(0, signature)
 
         digest_algorithm_transform_map = {
-            OneLogin_Saml2_Constants.SHA1: xmlsec.TransformSha1,
-            OneLogin_Saml2_Constants.SHA256: xmlsec.TransformSha256
+            OneLogin_Saml2_Constants.SHA1: xmlsec.Transform.SHA1,
+            OneLogin_Saml2_Constants.SHA256: xmlsec.Transform.SHA256
         }
 
-        digest_algorithm_transform = digest_algorithm_transform_map.get(digest_algorithm, xmlsec.TransformRsaSha1)
+        digest_algorithm_transform = digest_algorithm_transform_map.get(digest_algorithm, xmlsec.Transform.RSA_SHA1)
 
         ref = signature.addReference(digest_algorithm_transform, uri="#%s" % uid)
-        ref.addTransform(xmlsec.TransformEnveloped)
-        ref.addTransform(xmlsec.TransformExclC14N)
+        ref.addTransform(xmlsec.Transform.ENVELOPED)
+        ref.addTransform(xmlsec.Transform.EXCL_C14N)
 
         key_info = signature.ensureKeyInfo()
         key_info.addKeyName()
