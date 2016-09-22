@@ -14,11 +14,13 @@ from datetime import datetime
 import calendar
 from hashlib import sha1, sha256, sha384, sha512
 from isodate import parse_duration as duration_parser
+from lxml import etree
 import re
 from textwrap import wrap
 from uuid import uuid4
 from xml.dom.minidom import Document, Element
 from defusedxml.minidom import parseString
+from defusedxml.lxml import tostring, fromstring
 from dm.xmlsec.binding.tmpl import EncData, Signature
 
 
