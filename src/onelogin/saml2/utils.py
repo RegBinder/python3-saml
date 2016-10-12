@@ -19,10 +19,6 @@ import re
 from textwrap import wrap
 from uuid import uuid4
 from xml.dom.minidom import Document, Element
-from defusedxml.minidom import parseString
-from defusedxml.lxml import tostring, fromstring
-from dm.xmlsec.binding.tmpl import EncData, Signature
-
 
 import zlib
 import xmlsec
